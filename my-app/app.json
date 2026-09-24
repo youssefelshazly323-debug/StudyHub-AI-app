@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "StudyHub AI",
+    "slug": "studyhub-ai",
+    "version": "2.4.0",
+    "orientation": "portrait",
+    "android": {
+      "package": "com.studyhub.ai"
+    }
+  }
+}
