@@ -1,0 +1,4 @@
+# StudyHub AI – Mobile App (Expo / React Native)
+Run: `npm install` then `npx expo start` (scan QR with Expo Go, or press `a` for Android emulator).
+Flow: Splash → Onboarding → Log in → Home / Files / Tasks / Schedule / Chat, plus Upload, AI Summary, Create Task and Profile.
+Everything is front-end demo data; connect a real backend/AI API in Chat and Upload.
