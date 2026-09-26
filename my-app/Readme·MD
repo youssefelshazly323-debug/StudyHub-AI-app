@@ -1,5 +1,91 @@
-# StudyHub AI – Mobile App (Expo / React Native)
-Run: `npm install` then `npx expo start` (scan QR with Expo Go, or press `a` for Android emulator).
-Flow: Splash → Onboarding → Log in → Home / Files / Tasks / Schedule / Chat, plus Upload, AI Summary, Create Task and Profile.
-Everything is front-end demo data; connect a real backend/AI API in Chat and Upload.
-##Figma link for mobile app wireframe (https://www.figma.com/design/fktdV3MbsEKxYTVgstc4zi/Untitled?node-id=0-1&t=nvn42JoOQrKv9QER-1 )
+# StudyHub AI — React Native (Expo) App
+
+A real React Native app built with Expo, matching the Figma high-fidelity wireframes.
+This is a **different codebase** from the earlier HTML/CSS/JS version — this one is a
+proper mobile app you run through Expo Go, not a browser.
+
+## Requirements
+- [Node.js](https://nodejs.org) installed (LTS version)
+- The free **Expo Go** app installed on your phone (App Store / Google Play)
+- Your phone and computer on the **same Wi-Fi network**
+
+## How to run it
+
+1. Unzip this folder and open a terminal inside it.
+2. Install dependencies (only needed once):
+   ```
+   npm install
+   ```
+3. Start the Expo development server:
+   ```
+   npx expo start
+   ```
+4. A QR code will appear in the terminal (and a browser tab).
+   - **iPhone:** open the Camera app and point it at the QR code, tap the
+     notification that appears.
+   - **Android:** open the **Expo Go** app and tap "Scan QR code."
+5. The app will build and load on your phone — start from the Splash screen.
+
+If you want to test in a simulator/emulator instead of a real phone:
+```
+npx expo start --ios       (Mac only, needs Xcode)
+npx expo start --android   (needs Android Studio)
+```
+
+## Project structure
+```
+studyhub-expo/
+├── App.js                     # Root component — controls which screen is shown
+├── app.json                   # Expo app config (name, icon, splash colour)
+├── package.json
+├── src/
+│   ├── theme.js                # Shared colours
+│   ├── data/mockData.js        # Sample tasks, schedule, files
+│   ├── components/BottomNav.js # Shared bottom tab bar
+│   └── screens/
+│       ├── SplashScreen.js
+│       ├── OnboardingScreen.js
+│       ├── AuthScreen.js
+│       ├── HomeScreen.js
+│       ├── FilesScreen.js
+│       ├── UploadScreen.js
+│       ├── AISummaryScreen.js
+│       ├── TasksScreen.js
+│       ├── TaskEditorScreen.js
+│       ├── ScheduleScreen.js
+│       ├── ChatScreen.js
+│       └── ProfileScreen.js
+```
+
+## How navigation works
+There's no routing library — `App.js` keeps a single `screen` state variable and
+swaps which screen component renders, passing a `navigate(screenName)` function
+down as a prop. Each screen calls `navigate("ScreenName")` on button taps. This
+keeps the project simple for a group to read and edit without learning
+React Navigation.
+
+Tasks are lifted up into `App.js` state (`tasks`, `setTasks`) and passed into
+`TasksScreen` and `TaskEditorScreen` so a new task created in the editor shows
+up immediately back on the Tasks list.
+
+## Team workflow (per assignment brief)
+- Push this whole folder to your **public** GitHub repo (no private repos).
+- Each member can safely work on a separate file under `src/screens/` on their
+  own branch, then open a Pull Request — screens don't depend on each other's
+  internals, only on `navigate` and the shared `tasks` state.
+- Everyone needs to run `npm install` once after pulling the repo, since
+  `node_modules` should NOT be committed to Git (add a `.gitignore`, see below).
+
+## .gitignore
+Create a `.gitignore` file in this folder with:
+```
+node_modules/
+.expo/
+dist/
+```
+
+## Next steps to fully align with the brief
+- Replace mock data (`src/data/mockData.js`) and demo chat replies with a real
+  backend/API.
+- Add real form validation on Auth and Task Editor screens.
+- Add persistent storage (e.g. AsyncStorage) so tasks survive an app restart.

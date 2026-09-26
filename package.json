@@ -1,0 +1,10 @@
+{
+  "name": "studyhub-ai-workspace",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix my-app run start --",
+    "android": "npm --prefix my-app run android",
+    "ios": "npm --prefix my-app run ios",
+    "web": "npm --prefix my-app run web"
+  }
+}

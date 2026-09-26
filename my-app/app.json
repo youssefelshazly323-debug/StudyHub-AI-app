@@ -1,1 +1,25 @@
-{"expo":{"name":"StudyHub AI","slug":"studyhub-ai","version":"2.4.0","orientation":"portrait","android":{"package":"com.studyhub.ai"}}}
+{
+  "expo": {
+    "name": "StudyHub AI",
+    "slug": "studyhub-ai",
+    "version": "2.4.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2F4EA0"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.studyhub.ai",
+      "adaptiveIcon": {
+        "backgroundColor": "#2F4EA0"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
