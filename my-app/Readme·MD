@@ -35,57 +35,35 @@ npx expo start --android   (needs Android Studio)
 ## Project structure
 ```
 studyhub-expo/
-├── App.js                     # Root component — controls which screen is shown
+├── App.js                     # Shared mobile screen components
 ├── app.json                   # Expo app config (name, icon, splash colour)
 ├── package.json
 ├── src/
-│   ├── theme.js                # Shared colours
-│   ├── data/mockData.js        # Sample tasks, schedule, files
-│   ├── components/BottomNav.js # Shared bottom tab bar
-│   └── screens/
-│       ├── SplashScreen.js
-│       ├── OnboardingScreen.js
-│       ├── AuthScreen.js
-│       ├── HomeScreen.js
-│       ├── FilesScreen.js
-│       ├── UploadScreen.js
-│       ├── AISummaryScreen.js
-│       ├── TasksScreen.js
-│       ├── TaskEditorScreen.js
-│       ├── ScheduleScreen.js
-│       ├── ChatScreen.js
-│       └── ProfileScreen.js
+│   ├── app/                    # Expo Router routes and tab navigation
+│   ├── context/                # Shared in-session task and document state
+│   └── navigation.js           # Named route navigation helper
 ```
 
 ## How navigation works
-There's no routing library — `App.js` keeps a single `screen` state variable and
-swaps which screen component renders, passing a `navigate(screenName)` function
-down as a prop. Each screen calls `navigate("ScreenName")` on button taps. This
-keeps the project simple for a group to read and edit without learning
-React Navigation.
+Expo Router maps files in `src/app/` to screens. The home, files, tasks,
+timetable, and chat screens use a native tab navigator; upload, summary, profile,
+and task editor are separate stack screens. Task and selected-document state is
+shared through `StudyHubContext` while the app is open.
 
-Tasks are lifted up into `App.js` state (`tasks`, `setTasks`) and passed into
-`TasksScreen` and `TaskEditorScreen` so a new task created in the editor shows
-up immediately back on the Tasks list.
+The file picker adds a selected PDF to the in-app library for the current
+session. This prototype does not upload files to a server, persist documents
+after restart, authenticate accounts, or call a live AI service. Sample summary
+and chat responses are clearly identified as examples.
 
 ## Team workflow (per assignment brief)
 - Push this whole folder to your **public** GitHub repo (no private repos).
-- Each member can safely work on a separate file under `src/screens/` on their
+- Each member can safely work on a separate route under `src/app/` on their
   own branch, then open a Pull Request — screens don't depend on each other's
   internals, only on `navigate` and the shared `tasks` state.
 - Everyone needs to run `npm install` once after pulling the repo, since
   `node_modules` should NOT be committed to Git (add a `.gitignore`, see below).
 
-## .gitignore
-Create a `.gitignore` file in this folder with:
-```
-node_modules/
-.expo/
-dist/
-```
-
 ## Next steps to fully align with the brief
-- Replace mock data (`src/data/mockData.js`) and demo chat replies with a real
-  backend/API.
-- Add real form validation on Auth and Task Editor screens.
-- Add persistent storage (e.g. AsyncStorage) so tasks survive an app restart.
+- Connect authentication, file storage, and AI summaries to the team's approved
+  backend.
+- Add persistent storage so tasks and the library survive an app restart.
