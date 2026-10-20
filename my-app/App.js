@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import * as DocumentPicker from "expo-document-picker";
+import { StatusBar } from "expo-status-bar";
 import {
   Alert,
   Pressable,
@@ -12,11 +13,11 @@ import {
 } from "react-native";
 
 const C = {
-  blue: "#3263AF",
+  blue: "#3060AA",
   purple: "#9079C7",
   ink: "#20232A",
   muted: "#697482",
-  bg: "#F5F7FB",
+  bg: "#F3F5FA",
   border: "#E2E6EE",
   white: "#FFFFFF",
   red: "#F04444",
@@ -25,7 +26,9 @@ const C = {
 function Mark({ small = false, light = false }) {
   return (
     <View style={[styles.mark, small && styles.markSmall]}>
-      <View style={[styles.book, light && styles.bookLight]} />
+      <View style={[styles.book, small && styles.bookSmall, light && styles.bookLight]}>
+        <View style={[styles.bookSpine, light && styles.bookSpineLight]} />
+      </View>
       <Text style={[styles.spark, small && styles.sparkSmall]}>✦</Text>
     </View>
   );
@@ -35,12 +38,12 @@ function Icon({ type }) {
     home: "⌂",
     files: "▱",
     tasks: "☷",
-    schedule: "□",
+    schedule: "▦",
     chat: "◯",
-    back: "‹",
+    back: "←",
     arrow: ">",
     plus: "+",
-    search: "○",
+    search: "⌕",
     upload: "↑",
     bolt: "✦",
     eye: "◉",
@@ -78,21 +81,61 @@ function Button({
     </Pressable>
   );
 }
+function AppTabBar({ navigate, active }) {
+  const tabs = [
+    ["Home", "⌂"],
+    ["Files", "▱"],
+    ["Tasks", "☷"],
+    ["Schedule", "▦"],
+    ["Chat", "◯"],
+  ];
+
+  return (
+    <View style={styles.manualTabBar}>
+      {tabs.map(([label, glyph]) => {
+        const selected = label === active;
+        return (
+          <Pressable
+            key={label}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            onPress={() => navigate(label)}
+            style={styles.manualTab}
+          >
+            <Text
+              style={[
+                styles.manualTabIcon,
+                selected && styles.manualTabActive,
+              ]}
+            >
+              {glyph}
+            </Text>
+            <Text
+              style={[
+                styles.manualTabLabel,
+                selected && styles.manualTabActive,
+              ]}
+            >
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
 function Top({ title, onBack, right }) {
   return (
     <View style={styles.top}>
-      <View style={styles.topLeft}>
-        <Mark small light />
-        {onBack ? (
-          <Pressable onPress={onBack} hitSlop={12}>
-            <Icon type="back" />
-          </Pressable>
-        ) : null}
-      </View>
+      {onBack ? (
+        <Pressable onPress={onBack} hitSlop={12} style={styles.topBack}>
+          <Icon type="back" />
+        </Pressable>
+      ) : null}
       <Text style={styles.topTitle} numberOfLines={1}>
         {title}
       </Text>
-      {right || <View style={styles.topSpacer} />}
+      <View style={styles.topRight}>{right}</View>
     </View>
   );
 }
@@ -103,6 +146,7 @@ function Splash({ onDone }) {
   }, [onDone]);
   return (
     <View style={styles.splash}>
+      <StatusBar style="light" />
       <View style={styles.splashCenter}>
         <Mark />
         <Text style={styles.splashLogo}>StudyHub AI</Text>
@@ -123,18 +167,18 @@ function Onboarding({ onDone }) {
   const [step, setStep] = useState(0);
   const slides = [
     {
-      title: "Keep your study files together",
-      copy: "Upload lecture notes and course material to build a tidy, searchable campus library.",
-      glyph: "↑",
+      title: "Upload",
+      copy: "Drop your Wits COMS, UCT INF slides, or UP engineering PDF textbooks straight into the AI engine.",
+      glyph: "⇧",
     },
     {
-      title: "Revise with clear summaries",
-      copy: "Turn your course material into focused revision notes and key concepts.",
+      title: "Summarize",
+      copy: "Get high-yield summaries, key concepts, and instant flashcards from your course material.",
       glyph: "✦",
     },
     {
-      title: "Stay on top of the term",
-      copy: "Plan deadlines, check your timetable, and keep your study tasks moving.",
+      title: "Stay organized",
+      copy: "Keep track of assignments, deadlines, and your weekly class timetable.",
       glyph: "☷",
     },
   ];
@@ -142,23 +186,31 @@ function Onboarding({ onDone }) {
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.onboardTop}>
-        <View style={styles.onboardBrand}>
-          <Mark small light />
-          <Text style={styles.step}>
-            Step {step + 1} of {slides.length}
-          </Text>
-        </View>
+        <Text style={styles.step}>
+          Step {step + 1} of {slides.length}
+        </Text>
         <Pressable onPress={onDone} style={styles.skipPill}>
           <Text style={styles.skipText}>Skip</Text>
         </Pressable>
       </View>
       <View style={styles.onboardPage}>
-        <View style={styles.onboardCard}>
-          <View style={styles.onboardArt}>
-            <Text style={styles.uploadGlyph}>{slides[step].glyph}</Text>
-          </View>
-          <Text style={styles.onboardTitle}>{slides[step].title}</Text>
-          <Text style={styles.onboardCopy}>{slides[step].copy}</Text>
+        <View style={styles.onboardCards}>
+          {slides.slice(step, step + 2).map((slide, index) => (
+            <Pressable
+              key={slide.title}
+              onPress={() => index > 0 && setStep(step + index)}
+              style={[
+                styles.onboardCard,
+                index > 0 && styles.fadedCard,
+              ]}
+            >
+              <View style={styles.onboardArt}>
+                <Text style={styles.uploadGlyph}>{slide.glyph}</Text>
+              </View>
+              <Text style={styles.onboardTitle}>{slide.title}</Text>
+              <Text style={styles.onboardCopy}>{slide.copy}</Text>
+            </Pressable>
+          ))}
         </View>
       </View>
       <View style={styles.pageDots}>
@@ -194,8 +246,8 @@ function Onboarding({ onDone }) {
 function Auth({ onDone }) {
   const [active, setActive] = useState("Log In");
   const [show, setShow] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("thabo.mokoena@students.wits.ac.za");
+  const [password, setPassword] = useState("studyhubdemo");
   const [error, setError] = useState("");
 
   const submit = () => {
@@ -218,7 +270,7 @@ function Auth({ onDone }) {
         <Mark small light />
         <Text style={styles.authTitle}>Welcome to StudyHub</Text>
         <Text style={styles.authSubtitle}>
-          Your study workspace for South African campus modules.
+          Access AI summaries tailored for South African campus modules.
         </Text>
         <View style={styles.authTabs}>
           {["Log In", "Create Account"].map((tab) => (
@@ -312,10 +364,6 @@ function Auth({ onDone }) {
             </Pressable>
           </View>
         </View>
-        <Text style={styles.demoNote}>
-          Demo access only. No account is created and your credentials are not
-          sent or stored.
-        </Text>
         <Text style={styles.authFooter}>
           Don't have a student account?{" "}
           <Text
@@ -331,7 +379,8 @@ function Auth({ onDone }) {
 }
 function Home({ navigate }) {
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.screen}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <View style={styles.homeTop}>
         <View style={styles.homeBrand}>
           <Mark small light />
@@ -401,13 +450,21 @@ function Home({ navigate }) {
           <Text style={styles.muted}>User uploaded • Yesterday</Text>
         </View>
       </Pressable>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 function Files({ files, setSelectedFile, navigate }) {
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All PDFs");
-  const filters = ["All PDFs", ...new Set(files.map((file) => file.module))];
+  const filters = [
+    "All PDFs",
+    ...new Set(
+      files
+        .map((file) => file.module)
+        .filter((module) => !["AI SUMMARY", "NEW UPLOAD"].includes(module)),
+    ),
+  ];
   const visibleFiles = files.filter((file) => {
     const matchesFilter = filter === "All PDFs" || file.module === filter;
     const matchesQuery = `${file.name} ${file.module}`
@@ -417,22 +474,24 @@ function Files({ files, setSelectedFile, navigate }) {
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <Top title="Your Library" />
-      <View style={styles.titleRow}>
-        <Text style={styles.muted}>{files.length} documents</Text>
-        <Pressable
-          onPress={() => {
-            setQuery("");
-            setFilter("All PDFs");
-          }}
-          style={styles.circleButton}
-          accessibilityRole="button"
-          accessibilityLabel="Clear library filters"
-        >
-          <Icon type="sliders" />
-        </Pressable>
-      </View>
+    <View style={styles.screen}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+      <Top
+        title="Your Library"
+        right={
+          <Pressable
+            onPress={() => {
+              setQuery("");
+              setFilter("All PDFs");
+            }}
+            style={styles.circleButton}
+            accessibilityRole="button"
+            accessibilityLabel="Clear library filters"
+          >
+            <Icon type="sliders" />
+          </Pressable>
+        }
+      />
       <View style={styles.search}>
         <Icon type="search" />
         <TextInput
@@ -479,10 +538,14 @@ function Files({ files, setSelectedFile, navigate }) {
           </Text>
         </View>
       )}
-      <Pressable onPress={() => navigate("Upload")} style={styles.fab}>
+    </ScrollView>
+      <Pressable
+        onPress={() => navigate("Upload")}
+        style={[styles.fab, styles.filesFab]}
+      >
         <Icon type="plus" />
       </Pressable>
-    </ScrollView>
+    </View>
   );
 }
 function Tasks({ tasks, setTasks, navigate }) {
@@ -495,14 +558,16 @@ function Tasks({ tasks, setTasks, navigate }) {
   });
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <Top title="Your Tasks" />
-      <View style={styles.titleRow}>
-        <Text style={styles.muted}>Plan your coursework</Text>
-        <Text style={styles.donePill}>
-          {completeCount}/{tasks.length} Done
-        </Text>
-      </View>
+    <View style={styles.screen}>
+    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+      <Top
+        title="Your Tasks"
+        right={
+          <Text style={styles.donePill}>
+            {completeCount}/{tasks.length} Done
+          </Text>
+        }
+      />
       <View style={styles.chips}>
         {["All", "Pending", "Completed"].map((item) => (
           <Pressable key={item} onPress={() => setFilter(item)}>
@@ -556,10 +621,14 @@ function Tasks({ tasks, setTasks, navigate }) {
           <Text style={styles.muted}>Add a task or choose another filter.</Text>
         </View>
       )}
-      <Pressable onPress={() => navigate("TaskEditor")} style={styles.fab}>
+    </ScrollView>
+      <Pressable
+        onPress={() => navigate("TaskEditor")}
+        style={[styles.fab, styles.tasksFab]}
+      >
         <Icon type="plus" />
       </Pressable>
-    </ScrollView>
+    </View>
   );
 }
 function Schedule({ navigate }) {
@@ -579,8 +648,25 @@ function Schedule({ navigate }) {
   ];
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <Top title="Class Timetable" onBack={() => navigate("Back")} />
-      <Text style={styles.muted}>Wits University • Term 1</Text>
+      <Top
+        title="Class Timetable"
+        right={
+          <Pressable
+            onPress={() =>
+              Alert.alert(
+                "Timetable",
+                "Adding classes is not available in this prototype.",
+              )
+            }
+            style={styles.circleButton}
+            accessibilityRole="button"
+            accessibilityLabel="Add a class"
+          >
+            <Icon type="plus" />
+          </Pressable>
+        }
+      />
+      <Text style={styles.scheduleSubtitle}>Wits University • Term 1</Text>
       <View style={styles.weekRow}>
         <Pressable onPress={() => setWeek(Math.max(1, week - 1))} hitSlop={12}>
           <Icon type="back" />
@@ -597,15 +683,24 @@ function Schedule({ navigate }) {
           <Pressable
             key={`${day}${i}`}
             onPress={() => setSelectedDay(i)}
-            style={[styles.day, selectedDay === i && styles.dayOn]}
+            style={[
+              styles.day,
+              (selectedDay === i || i === 3) && styles.dayOn,
+            ]}
           >
             <Text
-              style={[styles.dayText, selectedDay === i && styles.dayTextOn]}
+              style={[
+                styles.dayText,
+                (selectedDay === i || i === 3) && styles.dayTextOn,
+              ]}
             >
               {day}
             </Text>
             <Text
-              style={[styles.dayNumber, selectedDay === i && styles.dayTextOn]}
+              style={[
+                styles.dayNumber,
+                (selectedDay === i || i === 3) && styles.dayTextOn,
+              ]}
             >
               {16 + i}
             </Text>
@@ -660,20 +755,20 @@ function Chat({ navigate, selectedFile }) {
 
   return (
     <View style={styles.chatScreen}>
-      <Top
-        title="StudyHub Assistant"
-        onBack={() => navigate("Back")}
-        right={
-          <Pressable onPress={() => navigate("Files")}>
-            <Text style={styles.changePdf}>Change PDF</Text>
-          </Pressable>
-        }
-      />
-      <Text style={styles.chatContext}>
-        {selectedFile
-          ? `Selected file: ${selectedFile.name}`
-          : "Sample study conversation"}
-      </Text>
+      <View style={styles.chatHeader}>
+        <View style={styles.botMark}>
+          <Icon type="bolt" />
+        </View>
+        <View style={styles.chatHeaderCopy}>
+          <Text style={styles.chatHeaderTitle}>StudyHub AI Assistant</Text>
+          <Text style={styles.chatContext} numberOfLines={1}>
+            Grounded on: {selectedFile?.name || "Databases Lecture 10"}
+          </Text>
+        </View>
+        <Pressable onPress={() => navigate("Files")}>
+          <Text style={styles.changePdf}>Change PDF</Text>
+        </Pressable>
+      </View>
       <ScrollView
         style={styles.chatBody}
         contentContainerStyle={styles.chatMessages}
@@ -714,6 +809,7 @@ function Chat({ navigate, selectedFile }) {
           </Pressable>
         </View>
         <View style={styles.chatInput}>
+          <Text style={styles.attach}>♧</Text>
           <TextInput
             value={draft}
             onChangeText={setDraft}
@@ -745,7 +841,7 @@ function Upload({ setFiles, selectedFile, setSelectedFile, navigate }) {
     setPicking(true);
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf",
+        type: ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
         copyToCacheDirectory: true,
         multiple: false,
       });
@@ -783,7 +879,8 @@ function Upload({ setFiles, selectedFile, setSelectedFile, navigate }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.screenWithNav}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <Top title="Upload Document" onBack={() => navigate("Back")} />
       <Pressable
         onPress={chooseDocument}
@@ -795,66 +892,77 @@ function Upload({ setFiles, selectedFile, setSelectedFile, navigate }) {
           {picking ? "Opening documents..." : "Tap to choose a PDF"}
         </Text>
         <Text style={styles.muted}>
-          PDF up to 25 MB • Stored locally in this prototype
+          PDF, DOCX, or PPT up to 25MB
         </Text>
       </Pressable>
       {!!error && <Text style={styles.formError}>{error}</Text>}
-      {selectedFile ? (
-        <View style={styles.uploadCard}>
-          <Text style={styles.fileName}>{selectedFile.name}</Text>
-          <Text style={styles.muted}>
-            {selectedFile.size} • Ready to review
-          </Text>
-          <Text style={styles.uploadNotice}>
-            File selection works on this device. Cloud upload and live AI
-            processing are not connected.
-          </Text>
-        </View>
-      ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>No document selected</Text>
-          <Text style={styles.muted}>
-            Choose a PDF to add it to your library.
-          </Text>
-        </View>
+      {selectedFile && (
+        <>
+          <View style={styles.uploadCard}>
+            <View style={styles.uploadFileRow}>
+              <View style={styles.documentIcon}>
+                <Text style={styles.documentGlyph}>▤</Text>
+              </View>
+              <View style={styles.uploadFileCopy}>
+                <Text style={styles.uploadFileName} numberOfLines={1}>
+                  {selectedFile.name}
+                </Text>
+                <Text style={styles.muted}>
+                  {selectedFile.size} • Ready on this device
+                </Text>
+              </View>
+            </View>
+            <View style={styles.progressText}>
+              <Text style={styles.muted}>Local file selected</Text>
+              <Text style={styles.progressPercent}>100%</Text>
+            </View>
+            <View style={styles.progress}>
+              <View style={[styles.progressOn, styles.progressComplete]} />
+            </View>
+          </View>
+          <View style={styles.success}>
+            <Text style={styles.successIcon}>✓</Text>
+            <View style={styles.successCopyWrap}>
+              <Text style={styles.successTitle}>File selected successfully!</Text>
+              <Text style={styles.successCopy}>
+                Cloud upload and live AI generation are not connected yet.
+              </Text>
+            </View>
+          </View>
+          <Button purple onPress={() => navigate("Summary")}>
+            ✦ Generate AI Summary
+          </Button>
+          <Button secondary onPress={() => navigate("Files")}>
+            Cancel Upload
+          </Button>
+        </>
       )}
-      <Button
-        purple
-        onPress={() => {
-          if (!selectedFile) {
-            setError("Choose a PDF before opening its sample summary.");
-            return;
-          }
-          navigate("Summary");
-        }}
-      >
-        View sample summary
-      </Button>
-      <Button secondary onPress={() => navigate("Files")}>
-        Back to library
-      </Button>
-    </ScrollView>
+      </ScrollView>
+      <AppTabBar navigate={navigate} active="Files" />
+    </View>
   );
 }
 function Summary({ selectedFile, navigate }) {
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.screenWithNav}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <Top title="AI Summary" onBack={() => navigate("Back")} />
       <View style={styles.summaryFile}>
         <View style={styles.fileMeta}>
           <Text style={styles.purpleTag}>
             {selectedFile?.module || "COMS3007"}
           </Text>
-          <Text style={styles.fileSize}>Sample summary</Text>
+          <Text style={styles.fileSize}>Active PDF Context</Text>
         </View>
         <Text style={styles.fileName}>
           {selectedFile?.name || "COMS3007_Exam_Prep_Summary.pdf"}
         </Text>
-        <Text style={styles.uploadNotice}>
-          Illustrative study content — this prototype does not analyze uploaded
-          files yet.
-        </Text>
-        <Text style={styles.summaryEstimate}>Example summary • 3 min read</Text>
+        <View style={styles.summaryProgressRow}>
+          <View style={styles.summaryProgress}>
+            <View style={styles.summaryProgressOn} />
+          </View>
+          <Text style={styles.fileSize}>75% Read</Text>
+        </View>
       </View>
       <View style={styles.concept}>
         <View style={styles.conceptHeading}>
@@ -890,32 +998,36 @@ function Summary({ selectedFile, navigate }) {
       <Button purple onPress={() => navigate("Chat")}>
         ✦ Ask about this file
       </Button>
-    </ScrollView>
+      </ScrollView>
+      <AppTabBar navigate={navigate} active="Files" />
+    </View>
   );
 }
 function Profile({ navigate }) {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
   return (
-    <ScrollView contentContainerStyle={styles.profile}>
-      <Top title="Student Profile" onBack={() => navigate("Back")} />
-      <View style={styles.profileHero}>
-        <View style={styles.profileAvatar}>
-          <Text style={styles.avatarText}>TM</Text>
+    <View style={styles.screenWithNav}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.profile}>
+      <View style={styles.profileHeader}>
+        <View style={styles.profileHero}>
+          <View style={styles.profileAvatar}>
+            <Text style={styles.avatarText}>TM</Text>
+          </View>
+          <View>
+            <Text style={styles.profileName}>Thabo Mokoena</Text>
+            <Text style={styles.profileEmail}>
+              thabo.mokoena@students.wits.ac.za
+            </Text>
+          </View>
         </View>
-        <View>
-          <Text style={styles.profileName}>Thabo Mokoena</Text>
-          <Text style={styles.profileEmail}>
-            thabo.mokoena@students.wits.ac.za
+        <View style={styles.affiliation}>
+          <Text style={styles.affiliationLabel}>UNIVERSITY AFFILIATION</Text>
+          <Text style={styles.affiliationName}>
+            Wits University (South Africa)
           </Text>
+          <Text style={styles.sync}>Sync active</Text>
         </View>
-      </View>
-      <View style={styles.affiliation}>
-        <Text style={styles.affiliationLabel}>UNIVERSITY AFFILIATION</Text>
-        <Text style={styles.affiliationName}>
-          Wits University (South Africa)
-        </Text>
-        <Text style={styles.sync}>Sync active</Text>
       </View>
       <Text style={styles.preference}>GENERAL PREFERENCES</Text>
       {[
@@ -962,17 +1074,28 @@ function Profile({ navigate }) {
           )}
         </Pressable>
       ))}
-      <Button secondary onPress={() => navigate("Auth", true)}>
-        Sign Out Student Account
-      </Button>
-    </ScrollView>
+      <Pressable
+        accessibilityRole="button"
+        onPress={() => navigate("Auth", true)}
+        style={styles.signOut}
+      >
+        <Text style={styles.signOutText}>Sign Out Student Account</Text>
+      </Pressable>
+      </ScrollView>
+      <AppTabBar navigate={navigate} active="Home" />
+    </View>
   );
 }
 function TaskEditor({ setTasks, navigate }) {
-  const [title, setTitle] = useState("");
+  const [title, setTitle] = useState("Prepare Databases Chapter 4 slides");
   const [module, setModule] = useState("COMS3007");
-  const [dueDate, setDueDate] = useState("");
-  const [dueTime, setDueTime] = useState("");
+  const moduleNames = {
+    COMS3007: "Databases",
+    INF3024S: "Microservices",
+    STAT2012: "Statistics",
+  };
+  const [dueDate, setDueDate] = useState("20 Feb 2026");
+  const [dueTime, setDueTime] = useState("23:59");
   const [priority, setPriority] = useState("HIGH");
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [error, setError] = useState("");
@@ -1000,7 +1123,8 @@ function TaskEditor({ setTasks, navigate }) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <View style={styles.screenWithNav}>
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
       <Top title="Create New Task" onBack={() => navigate("Back")} />
       <Text style={styles.label}>Task Title</Text>
       <TextInput
@@ -1010,43 +1134,54 @@ function TaskEditor({ setTasks, navigate }) {
           setTitle(value);
           setError("");
         }}
-        placeholder="e.g. Prepare database assignment"
+        placeholder="Prepare Databases Chapter 4 slides"
         maxLength={100}
       />
       <Text style={styles.label}>Course Module</Text>
-      <View style={styles.moduleChoices}>
-        {["COMS3007", "INF3024S", "STAT2012"].map((item) => (
-          <Pressable key={item} onPress={() => setModule(item)}>
-            <Text style={module === item ? styles.chipOn : styles.chip}>
-              {item}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <Pressable
+        onPress={() =>
+          setModule((current) => {
+            const modules = ["COMS3007", "INF3024S", "STAT2012"];
+            return modules[(modules.indexOf(current) + 1) % modules.length];
+          })
+        }
+        style={styles.select}
+      >
+        <Text style={styles.selectText}>
+          {module} ({moduleNames[module]})
+        </Text>
+        <Text style={styles.selectArrow}>⌄</Text>
+      </Pressable>
       <View style={styles.twoCol}>
         <View style={styles.col}>
           <Text style={styles.label}>Due Date</Text>
-          <TextInput
-            style={styles.field}
-            value={dueDate}
-            onChangeText={(value) => {
-              setDueDate(value);
-              setError("");
-            }}
-            placeholder="e.g. 20 Oct 2026"
-          />
+          <View style={styles.fieldWithIcon}>
+            <TextInput
+              style={[styles.field, styles.iconField]}
+              value={dueDate}
+              onChangeText={(value) => {
+                setDueDate(value);
+                setError("");
+              }}
+              placeholder="20 Feb 2026"
+            />
+            <Text style={styles.fieldIcon}>▦</Text>
+          </View>
         </View>
         <View style={styles.col}>
           <Text style={styles.label}>Due Time</Text>
-          <TextInput
-            style={styles.field}
-            value={dueTime}
-            onChangeText={(value) => {
-              setDueTime(value);
-              setError("");
-            }}
-            placeholder="23:59"
-          />
+          <View style={styles.fieldWithIcon}>
+            <TextInput
+              style={[styles.field, styles.iconField]}
+              value={dueTime}
+              onChangeText={(value) => {
+                setDueTime(value);
+                setError("");
+              }}
+              placeholder="23:59"
+            />
+            <Text style={styles.fieldIcon}>◷</Text>
+          </View>
         </View>
       </View>
       <Text style={styles.label}>Priority level</Text>
@@ -1071,10 +1206,8 @@ function TaskEditor({ setTasks, navigate }) {
       </View>
       <View style={styles.reminder}>
         <View>
-          <Text style={styles.prefTitle}>Reminder preference</Text>
-          <Text style={styles.muted}>
-            Notifications are not connected in this prototype.
-          </Text>
+          <Text style={styles.prefTitle}>Push Notification Reminder</Text>
+          <Text style={styles.muted}>Remind me 1 hour before due</Text>
         </View>
         <Pressable
           accessibilityRole="switch"
@@ -1103,7 +1236,9 @@ function TaskEditor({ setTasks, navigate }) {
           Save Task
         </Button>
       </View>
-    </ScrollView>
+      </ScrollView>
+      <AppTabBar navigate={navigate} active="Tasks" />
+    </View>
   );
 }
 
@@ -1124,6 +1259,8 @@ export {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: C.bg },
+  screenWithNav: { flex: 1, backgroundColor: C.bg },
+  flex: { flex: 1 },
   main: { flex: 1 },
   content: { padding: 16, paddingBottom: 38 },
   muted: { color: C.muted, fontSize: 12 },
@@ -1132,41 +1269,55 @@ const styles = StyleSheet.create({
   book: {
     position: "absolute",
     left: 7,
-    top: 8,
-    width: 24,
-    height: 36,
+    top: 14,
+    width: 34,
+    height: 28,
     borderWidth: 2,
     borderColor: C.white,
     borderRadius: 3,
   },
+  bookSmall: { left: 4, top: 8, width: 22, height: 19, borderWidth: 1.5 },
   bookLight: { borderColor: C.blue },
+  bookSpine: {
+    position: "absolute",
+    left: "50%",
+    top: 0,
+    bottom: 0,
+    borderLeftWidth: 1,
+    borderColor: C.white,
+  },
+  bookSpineLight: { borderColor: C.blue },
   spark: {
     position: "absolute",
-    top: -4,
-    left: 18,
+    top: 0,
+    left: 24,
     color: "#C4B2E8",
     fontSize: 30,
     fontWeight: "800",
   },
-  sparkSmall: { left: 11, fontSize: 20, color: C.purple },
+  sparkSmall: { left: 13, top: 2, fontSize: 15, color: C.purple },
   icon: { color: "#8A96A5", fontSize: 24, lineHeight: 26, textAlign: "center" },
   iconActive: { color: C.blue },
   backIcon: { color: C.ink, fontSize: 32 },
   top: {
-    height: 38,
+    minHeight: 38,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  topLeft: { width: 62, flexDirection: "row", alignItems: "center" },
+  topBack: { marginRight: 12, width: 22, alignItems: "flex-start" },
+  topRight: {
+    minWidth: 38,
+    alignItems: "flex-end",
+    justifyContent: "center",
+  },
   topTitle: {
     color: C.ink,
     fontSize: 20,
     fontWeight: "800",
     flex: 1,
-    textAlign: "center",
+    textAlign: "left",
   },
-  topSpacer: { width: 62 },
   nav: {
     height: 64,
     flexDirection: "row",
@@ -1179,6 +1330,25 @@ const styles = StyleSheet.create({
   navItem: { alignItems: "center", width: 62 },
   navLabel: { color: "#8A96A5", fontSize: 11, marginTop: 1 },
   navActive: { color: C.blue, fontWeight: "800" },
+  manualTabBar: {
+    height: 84,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    backgroundColor: C.white,
+    borderTopWidth: 1,
+    borderTopColor: C.border,
+    paddingTop: 7,
+    paddingBottom: 20,
+  },
+  manualTab: { alignItems: "center", width: 62 },
+  manualTabIcon: {
+    color: "#8A96A5",
+    fontSize: 23,
+    lineHeight: 26,
+    textAlign: "center",
+  },
+  manualTabLabel: { color: "#8A96A5", fontSize: 11, marginTop: 1 },
+  manualTabActive: { color: C.blue, fontWeight: "800" },
   button: {
     height: 46,
     backgroundColor: C.blue,
@@ -1209,7 +1379,7 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   splashText: { color: "#E1E9FA", fontSize: 16, marginTop: 8 },
-  splashBottom: { position: "absolute", bottom: 32, alignItems: "center" },
+  splashBottom: { position: "absolute", bottom: 38, alignItems: "center" },
   dots: { flexDirection: "row", marginBottom: 15 },
   dot: {
     width: 8,
@@ -1241,25 +1411,31 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   skipText: { color: C.muted, fontWeight: "700" },
-  onboardPage: { flex: 1, justifyContent: "center", paddingHorizontal: 20 },
+  onboardPage: {
+    flex: 1,
+    justifyContent: "center",
+    paddingLeft: 20,
+    overflow: "hidden",
+  },
+  onboardCards: { flexDirection: "row", gap: 12 },
   onboardActions: {
     flexDirection: "row",
     gap: 12,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   flexButton: { flex: 1 },
   onboardCard: {
-    width: "100%",
-    minHeight: 320,
+    width: 260,
+    height: 360,
     backgroundColor: C.white,
     borderWidth: 2,
     borderColor: C.blue,
     borderRadius: 18,
     padding: 18,
-    justifyContent: "center",
+    justifyContent: "flex-start",
   },
-  fadedCard: { opacity: 0.55, borderColor: C.border },
+  fadedCard: { opacity: 0.5, borderColor: C.border },
   onboardArt: {
     height: 160,
     backgroundColor: "#ECF2FC",
@@ -1268,18 +1444,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
-  uploadGlyph: { color: C.blue, fontSize: 48 },
+  uploadGlyph: { color: C.blue, fontSize: 44 },
   onboardTitle: {
     color: C.ink,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "800",
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  onboardCopy: { color: C.muted, fontSize: 14, lineHeight: 21 },
+  onboardCopy: { color: C.muted, fontSize: 13, lineHeight: 20 },
   pageDots: {
+    position: "absolute",
+    bottom: 210,
+    alignSelf: "center",
     flexDirection: "row",
     justifyContent: "center",
-    marginVertical: 16,
+    marginVertical: 0,
   },
   pageDot: {
     width: 6,
@@ -1296,10 +1475,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
   auth: { flex: 1, backgroundColor: C.bg },
-  authContent: { flexGrow: 1, padding: 24, paddingTop: 30, paddingBottom: 26 },
-  authTitle: { color: C.ink, fontSize: 24, fontWeight: "800", marginTop: 6 },
-  authSubtitle: { color: C.muted, fontSize: 15, lineHeight: 20, marginTop: 4 },
-  authTabs: { flexDirection: "row", gap: 17, marginTop: 18 },
+  authContent: { flexGrow: 1, padding: 24, paddingTop: 20, paddingBottom: 24 },
+  authTitle: { color: C.ink, fontSize: 24, fontWeight: "800", marginTop: 8 },
+  authSubtitle: { color: C.muted, fontSize: 14, lineHeight: 19, marginTop: 4 },
+  authTabs: { flexDirection: "row", gap: 17, marginTop: 16 },
   authTab: {
     color: C.muted,
     fontSize: 16,
@@ -1309,7 +1488,7 @@ const styles = StyleSheet.create({
   authTabOn: { color: C.blue },
   tabLine: { height: 2, backgroundColor: "transparent" },
   tabLineOn: { backgroundColor: C.blue },
-  authForm: { marginTop: 24 },
+  authForm: { marginTop: 94 },
   label: {
     color: "#626C7A",
     fontSize: 12,
@@ -1378,13 +1557,6 @@ const styles = StyleSheet.create({
   },
   socialIcon: { fontSize: 22, color: C.ink },
   socialText: { color: C.ink, fontWeight: "700" },
-  demoNote: {
-    color: C.muted,
-    fontSize: 11,
-    lineHeight: 16,
-    textAlign: "center",
-    marginTop: 16,
-  },
   authFooter: {
     color: C.muted,
     textAlign: "center",
@@ -1589,7 +1761,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 16,
-    bottom: 36,
+    bottom: 20,
     width: 56,
     height: 56,
     backgroundColor: C.blue,
@@ -1598,6 +1770,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 5,
   },
+  filesFab: { bottom: 180 },
+  tasksFab: { bottom: 34 },
   taskCard: {
     backgroundColor: C.white,
     borderWidth: 1,
@@ -1657,6 +1831,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   week: { color: C.ink, fontWeight: "800" },
+  scheduleSubtitle: { color: C.muted, fontSize: 11, marginTop: 0 },
   forward: { color: C.muted, fontSize: 28 },
   days: { flexDirection: "row", gap: 5, marginBottom: 10 },
   day: {
@@ -1689,11 +1864,21 @@ const styles = StyleSheet.create({
   chatScreen: {
     flex: 1,
     backgroundColor: C.bg,
-    padding: 16,
     paddingBottom: 12,
   },
-  chatContext: { color: C.muted, fontSize: 11, marginLeft: 34, marginTop: -2 },
-  chatBody: { flex: 1, paddingTop: 22 },
+  chatHeader: {
+    height: 48,
+    backgroundColor: C.white,
+    borderBottomWidth: 1,
+    borderBottomColor: C.border,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+  },
+  chatHeaderCopy: { flex: 1, marginLeft: 7 },
+  chatHeaderTitle: { color: C.ink, fontSize: 14, fontWeight: "800" },
+  chatContext: { color: C.muted, fontSize: 11, marginTop: 1 },
+  chatBody: { flex: 1, paddingTop: 16, marginHorizontal: 16 },
   chatMessages: { paddingBottom: 14 },
   userBubble: {
     alignSelf: "flex-end",
@@ -1736,9 +1921,15 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "800",
     marginBottom: 8,
+    marginHorizontal: 16,
   },
-  promptRow: { flexDirection: "row", gap: 8, marginBottom: 9 },
-  promptAction: { flex: 1 },
+  promptRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 9,
+    marginHorizontal: 16,
+  },
+  promptAction: { flex: 1, minWidth: 0 },
   prompt: {
     backgroundColor: C.white,
     borderWidth: 1,
@@ -1759,8 +1950,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingLeft: 14,
+    marginHorizontal: 16,
   },
-  attach: { color: "#8A96A5", fontSize: 20 },
+  attach: { color: "#8A96A5", fontSize: 18 },
   chatTextInput: { flex: 1, paddingHorizontal: 8, fontSize: 13 },
   send: {
     width: 32,
@@ -1783,7 +1975,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 7,
   },
-  cloud: { fontSize: 42, color: C.blue },
+  cloud: {
+    width: 56,
+    height: 56,
+    overflow: "hidden",
+    borderRadius: 28,
+    backgroundColor: "#EAF1FD",
+    fontSize: 36,
+    lineHeight: 56,
+    textAlign: "center",
+    color: C.blue,
+  },
   dropTitle: { color: C.ink, fontWeight: "800", marginTop: 7 },
   uploadCard: {
     backgroundColor: C.white,
@@ -1793,6 +1995,22 @@ const styles = StyleSheet.create({
     padding: 14,
     marginTop: 18,
   },
+  uploadFileRow: { flexDirection: "row", alignItems: "center" },
+  documentIcon: {
+    width: 34,
+    height: 38,
+    borderRadius: 6,
+    backgroundColor: "#EAF1FD",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+  documentGlyph: { color: C.blue, fontSize: 22 },
+  uploadFileCopy: { flex: 1 },
+  uploadFileName: { color: C.ink, fontSize: 13, fontWeight: "800" },
+  progressPercent: { color: C.blue, fontSize: 11, fontWeight: "800" },
+  progressComplete: { width: "100%" },
+  successCopyWrap: { flex: 1 },
   uploadNotice: { color: C.muted, fontSize: 12, lineHeight: 18, marginTop: 10 },
   emptyState: {
     alignItems: "center",
@@ -1839,6 +2057,24 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 13,
     marginTop: 7,
+  },
+  summaryProgressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 7,
+    marginTop: 7,
+  },
+  summaryProgress: {
+    flex: 1,
+    height: 4,
+    backgroundColor: "#E7EAF0",
+    borderRadius: 2,
+  },
+  summaryProgressOn: {
+    width: "75%",
+    height: 4,
+    backgroundColor: C.purple,
+    borderRadius: 2,
   },
   readRow: {
     flexDirection: "row",
@@ -1893,14 +2129,18 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   profile: { paddingBottom: 30, backgroundColor: C.bg },
-  profileHero: {
+  profileHeader: {
     backgroundColor: C.blue,
-    padding: 20,
-    paddingTop: 24,
-    flexDirection: "row",
-    alignItems: "center",
+    paddingTop: 12,
+    paddingBottom: 18,
     borderBottomLeftRadius: 26,
     borderBottomRightRadius: 26,
+  },
+  profileHero: {
+    paddingHorizontal: 18,
+    paddingVertical: 4,
+    flexDirection: "row",
+    alignItems: "center",
   },
   profileAvatar: {
     width: 54,
@@ -1918,8 +2158,8 @@ const styles = StyleSheet.create({
   affiliation: {
     backgroundColor: C.white,
     borderRadius: 14,
-    margin: 16,
-    marginTop: -1,
+    marginHorizontal: 18,
+    marginTop: 12,
     padding: 12,
   },
   affiliationLabel: { color: "#8A96A5", fontSize: 10, fontWeight: "800" },
@@ -1945,6 +2185,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "800",
     marginHorizontal: 16,
+    marginTop: 16,
     marginBottom: 10,
   },
   preferenceCard: {
@@ -1960,6 +2201,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   prefTitle: { color: C.ink, fontWeight: "800", fontSize: 13 },
+  signOut: {
+    backgroundColor: "#FFE5E5",
+    borderColor: C.red,
+    borderWidth: 1,
+    borderRadius: 12,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
+    marginTop: 2,
+  },
+  signOutText: { color: C.red, fontWeight: "800", fontSize: 13 },
   toggle: {
     width: 44,
     height: 25,
@@ -1988,6 +2241,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  fieldWithIcon: { position: "relative" },
+  iconField: { paddingRight: 38 },
+  fieldIcon: {
+    position: "absolute",
+    right: 12,
+    top: 10,
+    color: "#8A96A5",
+    fontSize: 18,
+  },
+  selectText: { color: C.ink, fontSize: 14 },
+  selectArrow: { color: "#8A96A5", fontSize: 22, lineHeight: 24 },
   twoCol: { flexDirection: "row", gap: 12 },
   col: { flex: 1 },
   moduleChoices: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

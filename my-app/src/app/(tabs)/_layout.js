@@ -23,7 +23,13 @@ export default function TabLayout() {
         tabBarActiveTintColor: "#3263AF",
         tabBarInactiveTintColor: "#8A96A5",
         tabBarLabelStyle: { fontSize: 11, fontWeight: "700", marginBottom: 3 },
-        tabBarStyle: { backgroundColor: "#FFFFFF", borderTopColor: "#E2E6EE" },
+        tabBarStyle: {
+          height: 84,
+          paddingTop: 7,
+          paddingBottom: 20,
+          backgroundColor: "#FFFFFF",
+          borderTopColor: "#E2E6EE",
+        },
       }}
     >
       <Tabs.Screen
@@ -40,7 +46,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="schedule"
-        options={{ title: "Schedule", tabBarIcon: tabIcon("□") }}
+        options={{ title: "Schedule", tabBarIcon: tabIcon("▦") }}
       />
       <Tabs.Screen
         name="chat"
