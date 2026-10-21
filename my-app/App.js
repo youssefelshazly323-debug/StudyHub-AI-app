@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import * as DocumentPicker from "expo-document-picker";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Alert,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
