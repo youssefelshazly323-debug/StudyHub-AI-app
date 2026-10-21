@@ -31,6 +31,13 @@ The app currently has a few different sections:
 
 There are also onboarding and login screens when starting the app.
 
+## Running in development
+
+From the repository root, run `npm run web` to start the web app. Native testing
+uses an SDK 58 development build instead of Expo Go. From `my-app`, run
+`npx expo run:android` to build for Android (requires Android Studio and the
+Android SDK), then run `npx expo start` to connect the development client.
+
 ## How We Organised the Project
 
  I tried to keep the project organised so that it is easier for everyone in the group to work on.
