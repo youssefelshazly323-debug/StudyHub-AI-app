@@ -631,84 +631,209 @@ function Tasks({ tasks, setTasks, navigate }) {
     </View>
   );
 }
-function Schedule({ navigate }) {
-  const [week, setWeek] = useState(6);
-  const [selectedDay, setSelectedDay] = useState(1);
-  const classes = [
-    ["08:00", "09:30", "COMS3007", "Databases lecture", "MSB 101"],
-    ["10:00", "11:30", "INF3024S", "Microservices & Cloud", "Net Lab 2"],
-    ["12:00", "13:30", "STAT2012", "Statistical Inference", "Senate House 3"],
-    [
-      "14:30",
-      "16:00",
-      "COMS3007",
-      "Tutorial & Lab session",
-      "Chamber of Mines Lab",
-    ],
-  ];
+function Schedule({ schedule, setSchedule }) {
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDay, setSelectedDay] = useState(0);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [title, setTitle] = useState("");
+  const [module, setModule] = useState("");
+  const [start, setStart] = useState("");
+  const [end, setEnd] = useState("");
+  const [room, setRoom] = useState("");
+  const [error, setError] = useState("");
+  const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+  const weekStart = new Date();
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(
+    weekStart.getDate() - ((weekStart.getDay() + 6) % 7) + weekOffset * 7,
+  );
+  const weekDays = dayNames.map((name, index) => {
+    const date = new Date(weekStart);
+    date.setDate(date.getDate() + index);
+    return { name, date };
+  });
+  const weekLabel = `${weekStart.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  })} - ${weekDays[4].date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  })}`;
+  const dayClasses = schedule
+    .filter((item) => item.day === selectedDay)
+    .sort((first, second) => first.start.localeCompare(second.start));
+
+  const saveClass = () => {
+    const startTimePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+    if (!title.trim() || !module.trim() || !start.trim() || !end.trim()) {
+      setError("Enter a class name, module, start time, and end time.");
+      return;
+    }
+    if (
+      !startTimePattern.test(start.trim()) ||
+      !startTimePattern.test(end.trim()) ||
+      start.trim() >= end.trim()
+    ) {
+      setError("Enter valid 24-hour times, with the end time after the start.");
+      return;
+    }
+
+    setSchedule((current) => [
+      ...current,
+      {
+        id: `class-${Date.now()}`,
+        day: selectedDay,
+        start: start.trim(),
+        end: end.trim(),
+        module: module.trim(),
+        title: title.trim(),
+        room: room.trim() || "Room not set",
+      },
+    ]);
+    setTitle("");
+    setModule("");
+    setStart("");
+    setEnd("");
+    setRoom("");
+    setError("");
+    setShowAddForm(false);
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <Top
         title="Class Timetable"
         right={
           <Pressable
-            onPress={() =>
-              Alert.alert(
-                "Timetable",
-                "Adding classes is not available in this prototype.",
-              )
-            }
+            onPress={() => {
+              setShowAddForm((visible) => !visible);
+              setError("");
+            }}
             style={styles.circleButton}
             accessibilityRole="button"
-            accessibilityLabel="Add a class"
+            accessibilityLabel={showAddForm ? "Cancel adding a class" : "Add a class"}
           >
-            <Icon type="plus" />
+            <Text style={styles.selectArrow}>{showAddForm ? "×" : "+"}</Text>
           </Pressable>
         }
       />
-      <Text style={styles.scheduleSubtitle}>Wits University • Term 1</Text>
+      <Text style={styles.scheduleSubtitle}>Wits University • Weekly timetable</Text>
       <View style={styles.weekRow}>
-        <Pressable onPress={() => setWeek(Math.max(1, week - 1))} hitSlop={12}>
+        <Pressable
+          onPress={() => setWeekOffset((offset) => offset - 1)}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Previous week"
+        >
           <Icon type="back" />
         </Pressable>
-        <Text style={styles.week}>
-          Week {week} ({16 + (week - 6) * 7} - {20 + (week - 6) * 7} Feb)
-        </Text>
-        <Pressable onPress={() => setWeek(week + 1)} hitSlop={12}>
+        <Text style={styles.week}>Week of {weekLabel}</Text>
+        <Pressable
+          onPress={() => setWeekOffset((offset) => offset + 1)}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel="Next week"
+        >
           <Text style={styles.forward}>›</Text>
         </Pressable>
       </View>
       <View style={styles.days}>
-        {["M", "T", "W", "T", "F"].map((day, i) => (
+        {weekDays.map(({ name, date }, index) => (
           <Pressable
-            key={`${day}${i}`}
-            onPress={() => setSelectedDay(i)}
+            key={name}
+            onPress={() => setSelectedDay(index)}
             style={[
               styles.day,
-              (selectedDay === i || i === 3) && styles.dayOn,
+              selectedDay === index && styles.dayOn,
             ]}
+            accessibilityRole="button"
+            accessibilityLabel={`${name}, ${date.toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "long",
+            })}`}
+            accessibilityState={{ selected: selectedDay === index }}
           >
             <Text
               style={[
                 styles.dayText,
-                (selectedDay === i || i === 3) && styles.dayTextOn,
+                selectedDay === index && styles.dayTextOn,
               ]}
             >
-              {day}
+              {name.slice(0, 1)}
             </Text>
             <Text
               style={[
                 styles.dayNumber,
-                (selectedDay === i || i === 3) && styles.dayTextOn,
+                selectedDay === index && styles.dayTextOn,
               ]}
             >
-              {16 + i}
+              {date.getDate()}
             </Text>
           </Pressable>
         ))}
       </View>
-      {classes.map(([start, end, module, title, room]) => (
-        <View key={title} style={styles.classRow}>
+      {showAddForm && (
+        <View style={styles.scheduleForm}>
+          <Text style={styles.sectionTitle}>Add a class on {dayNames[selectedDay]}</Text>
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Class name"
+            style={[styles.field, styles.scheduleField]}
+            maxLength={80}
+          />
+          <TextInput
+            value={module}
+            onChangeText={setModule}
+            placeholder="Module (e.g. COMS3007)"
+            style={[styles.field, styles.scheduleField]}
+            maxLength={24}
+          />
+          <View style={styles.twoCol}>
+            <TextInput
+              value={start}
+              onChangeText={setStart}
+              placeholder="Start (09:00)"
+              style={[styles.field, styles.col, styles.scheduleField]}
+              keyboardType="numbers-and-punctuation"
+              maxLength={5}
+            />
+            <TextInput
+              value={end}
+              onChangeText={setEnd}
+              placeholder="End (10:00)"
+              style={[styles.field, styles.col, styles.scheduleField]}
+              keyboardType="numbers-and-punctuation"
+              maxLength={5}
+            />
+          </View>
+          <TextInput
+            value={room}
+            onChangeText={setRoom}
+            placeholder="Room (optional)"
+            style={[styles.field, styles.scheduleField]}
+            maxLength={40}
+          />
+          {!!error && <Text style={styles.formError}>{error}</Text>}
+          <View style={styles.twoButtons}>
+            <Button
+              secondary
+              style={styles.flexButton}
+              onPress={() => {
+                setShowAddForm(false);
+                setError("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button style={styles.flexButton} onPress={saveClass}>
+              Save Class
+            </Button>
+          </View>
+        </View>
+      )}
+      {dayClasses.map(({ id, start, end, module, title, room }) => (
+        <View key={id} style={styles.classRow}>
           <View style={styles.time}>
             <Text style={styles.timeStart}>{start}</Text>
             <Text style={styles.timeEnd}>{end}</Text>
@@ -722,6 +847,14 @@ function Schedule({ navigate }) {
           </View>
         </View>
       ))}
+      {dayClasses.length === 0 && (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>No classes scheduled</Text>
+          <Text style={styles.muted}>
+            Add a class to your {dayNames[selectedDay]} timetable.
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -1094,7 +1227,15 @@ function TaskEditor({ setTasks, navigate }) {
     INF3024S: "Microservices",
     STAT2012: "Statistics",
   };
-  const [dueDate, setDueDate] = useState("20 Feb 2026");
+  const [dueDate, setDueDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  });
   const [dueTime, setDueTime] = useState("23:59");
   const [priority, setPriority] = useState("HIGH");
   const [reminderEnabled, setReminderEnabled] = useState(true);
@@ -1103,6 +1244,45 @@ function TaskEditor({ setTasks, navigate }) {
   const saveTask = () => {
     if (!title.trim() || !dueDate.trim() || !dueTime.trim()) {
       setError("Enter a task title, due date, and due time.");
+      return;
+    }
+    const dateMatch = /^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/.exec(dueDate.trim());
+    const months = [
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "may",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "oct",
+      "nov",
+      "dec",
+    ];
+    const monthIndex = dateMatch
+      ? months.indexOf(dateMatch[2].toLowerCase())
+      : -1;
+    const parsedDate =
+      monthIndex < 0
+        ? null
+        : new Date(
+            Number(dateMatch[3]),
+            monthIndex,
+            Number(dateMatch[1]),
+          );
+    if (
+      !parsedDate ||
+      parsedDate.getFullYear() !== Number(dateMatch[3]) ||
+      parsedDate.getMonth() !== monthIndex ||
+      parsedDate.getDate() !== Number(dateMatch[1])
+    ) {
+      setError("Enter the due date as DD Mon YYYY, for example 23 Oct 2026.");
+      return;
+    }
+    if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(dueTime.trim())) {
+      setError("Enter a valid 24-hour due time, for example 14:30.");
       return;
     }
 
@@ -1163,7 +1343,7 @@ function TaskEditor({ setTasks, navigate }) {
                 setDueDate(value);
                 setError("");
               }}
-              placeholder="20 Feb 2026"
+              placeholder="DD Mon YYYY"
             />
             <Text style={styles.fieldIcon}>▦</Text>
           </View>
@@ -1847,6 +2027,15 @@ const styles = StyleSheet.create({
   dayText: { color: C.ink, fontWeight: "800" },
   dayNumber: { color: "#8A96A5", fontSize: 10, marginTop: 4 },
   dayTextOn: { color: C.white },
+  scheduleForm: {
+    backgroundColor: C.white,
+    borderWidth: 1,
+    borderColor: C.border,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+  },
+  scheduleField: { marginTop: 8 },
   classRow: { flexDirection: "row", marginBottom: 10 },
   classCard: {
     flex: 1,
