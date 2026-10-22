@@ -66,16 +66,101 @@ const initialFiles = [
   },
 ];
 
+const initialSchedule = [
+  {
+    id: "monday-databases",
+    day: 0,
+    start: "08:00",
+    end: "09:30",
+    module: "COMS3007",
+    title: "Databases lecture",
+    room: "MSB 101",
+  },
+  {
+    id: "monday-statistics",
+    day: 0,
+    start: "12:00",
+    end: "13:30",
+    module: "STAT2012",
+    title: "Statistical Inference",
+    room: "Senate House 3",
+  },
+  {
+    id: "tuesday-microservices",
+    day: 1,
+    start: "10:00",
+    end: "11:30",
+    module: "INF3024S",
+    title: "Microservices & Cloud",
+    room: "Net Lab 2",
+  },
+  {
+    id: "wednesday-statistics",
+    day: 2,
+    start: "12:00",
+    end: "13:30",
+    module: "STAT2012",
+    title: "Statistical Inference",
+    room: "Senate House 3",
+  },
+  {
+    id: "thursday-databases",
+    day: 3,
+    start: "08:00",
+    end: "09:30",
+    module: "COMS3007",
+    title: "Databases lecture",
+    room: "MSB 101",
+  },
+  {
+    id: "thursday-microservices",
+    day: 3,
+    start: "10:00",
+    end: "11:30",
+    module: "INF3024S",
+    title: "Microservices & Cloud",
+    room: "Net Lab 2",
+  },
+  {
+    id: "thursday-lab",
+    day: 3,
+    start: "14:30",
+    end: "16:00",
+    module: "COMS3007",
+    title: "Tutorial & Lab session",
+    room: "Chamber of Mines Lab",
+  },
+  {
+    id: "friday-statistics",
+    day: 4,
+    start: "09:00",
+    end: "10:30",
+    module: "STAT2012",
+    title: "Statistics tutorial",
+    room: "Senate House 3",
+  },
+];
+
 const StudyHubContext = createContext(null);
 
 export function StudyHubProvider({ children }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [files, setFiles] = useState(initialFiles);
+  const [schedule, setSchedule] = useState(initialSchedule);
   const [selectedFile, setSelectedFile] = useState(null);
 
   const value = useMemo(
-    () => ({ tasks, setTasks, files, setFiles, selectedFile, setSelectedFile }),
-    [tasks, files, selectedFile],
+    () => ({
+      tasks,
+      setTasks,
+      files,
+      setFiles,
+      schedule,
+      setSchedule,
+      selectedFile,
+      setSelectedFile,
+    }),
+    [tasks, files, schedule, selectedFile],
   );
 
   return (
