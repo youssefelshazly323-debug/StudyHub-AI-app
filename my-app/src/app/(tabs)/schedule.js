@@ -1,7 +1,12 @@
 import { Schedule } from "../../../App";
-import { useAppNavigation } from "../../navigation";
+import { useStudyHub } from "../../context/StudyHubContext";
 
 export default function ScheduleRoute() {
-  const navigate = useAppNavigation();
-  return <Schedule navigate={navigate} />;
+  const { schedule, setSchedule } = useStudyHub();
+  return (
+    <Schedule
+      schedule={schedule}
+      setSchedule={setSchedule}
+    />
+  );
 }
