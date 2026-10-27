@@ -359,7 +359,7 @@ function Auth({ onDone }) {
               style={styles.social}
               onPress={() => setError("Apple sign-in is not connected yet.")}
             >
-              <Text style={styles.socialIcon}>●</Text>
+              <Text style={styles.socialIcon}>○</Text>
               <Text style={styles.socialText}>Apple</Text>
             </Pressable>
           </View>
