@@ -1,12 +1,14 @@
 {
   "expo": {
     "name": "StudyHub AI",
-    "slug": "studyhub-ai",
+    "slug": "studyhub-ai-workspace",
     "version": "2.4.0",
     "scheme": "studyhub-ai",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false
     },
@@ -30,6 +32,13 @@
           "imageWidth": 140
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6017c6d1-9e1a-4dcf-b249-5024aa91d5cd"
+      }
+    },
+    "owner": "youssef1512"
   }
 }

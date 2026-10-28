@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "6017c6d1-9e1a-4dcf-b249-5024aa91d5cd"
+      }
+    },
+    "android": {
+      "package": "com.youssef1512.studyhubaiworkspace"
+    }
+  }
+}
