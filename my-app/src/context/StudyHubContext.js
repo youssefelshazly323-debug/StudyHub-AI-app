@@ -1,4 +1,14 @@
-import React, { createContext, useContext, useMemo, useState } from "react";
+
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const STORAGE_KEY = "@studyhub_app_data";
 
 const initialTasks = [
   {
@@ -148,6 +158,84 @@ export function StudyHubProvider({ children }) {
   const [files, setFiles] = useState(initialFiles);
   const [schedule, setSchedule] = useState(initialSchedule);
   const [selectedFile, setSelectedFile] = useState(null);
+
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+  const [canSaveData, setCanSaveData] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadData() {
+      try {
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+
+        if (!active) return;
+
+        if (saved !== null) {
+          const data = JSON.parse(saved);
+
+          if (
+            !data ||
+            typeof data !== "object" ||
+            Array.isArray(data)
+          ) {
+            throw new Error("Saved StudyHub data has an invalid format.");
+          }
+
+          if (Array.isArray(data.tasks)) {
+            setTasks(data.tasks);
+          }
+
+          if (Array.isArray(data.files)) {
+            setFiles(data.files);
+          }
+
+          if (Array.isArray(data.schedule)) {
+            setSchedule(data.schedule);
+          }
+        }
+
+        // Allow saving only after loading succeeds.
+        setCanSaveData(true);
+      } catch (error) {
+        console.warn(
+          "Could not load StudyHub data. Saving is paused to protect existing data:",
+          error,
+        );
+      } finally {
+        if (active) {
+          setIsDataLoaded(true);
+        }
+      }
+    }
+
+    loadData();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isDataLoaded || !canSaveData) return;
+
+    async function saveData() {
+      try {
+        await AsyncStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            tasks,
+            files,
+            schedule,
+          }),
+        );
+      } catch (error) {
+        console.warn("Could not save StudyHub data:", error);
+      }
+    }
+
+    saveData();
+  }, [tasks, files, schedule, isDataLoaded, canSaveData]);
 
   const value = useMemo(
     () => ({
