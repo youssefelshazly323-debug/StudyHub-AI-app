@@ -1549,7 +1549,7 @@ function TaskEditor({ tasks, setTasks, navigate, editingTask }) {
       <AppTabBar navigate={navigate} active="Tasks" />
     </View>
   );
-};
+}
 
 export {
   Auth,
