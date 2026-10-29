@@ -1551,7 +1551,6 @@ function TaskEditor({ tasks, setTasks, navigate, editingTask }) {
   );
 };
 }
-
 export {
   Auth,
   Chat,
