@@ -1,3 +1,4 @@
+
 import { useRouter } from "expo-router";
 
 const routes = {
@@ -18,7 +19,7 @@ const routes = {
 export function useAppNavigation() {
   const router = useRouter();
 
-  return (screen, replace = false) => {
+  return (screen, replace = false, params = {}) => {
     if (screen === "Back") {
       if (router.canGoBack()) {
         router.back();
@@ -29,14 +30,23 @@ export function useAppNavigation() {
     }
 
     const route = routes[screen];
+
     if (!route) {
       throw new Error(`Unknown StudyHub screen: ${screen}`);
     }
 
+    const destination =
+      Object.keys(params).length > 0
+        ? {
+            pathname: route,
+            params,
+          }
+        : route;
+
     if (replace) {
-      router.replace(route);
+      router.replace(destination);
     } else {
-      router.push(route);
+      router.push(destination);
     }
   };
 }
