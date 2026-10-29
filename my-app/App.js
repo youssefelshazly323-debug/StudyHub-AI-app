@@ -1286,7 +1286,7 @@ function Profile({ navigate }) {
       <AppTabBar navigate={navigate} active="Home" />
     </View>
   );
-
+}
 function TaskEditor({ tasks, setTasks, navigate, editingTask }) {
   const dueParts = editingTask?.due?.match(
     /^Due (.+), (\d{2}:\d{2})$/,
@@ -1550,7 +1550,7 @@ function TaskEditor({ tasks, setTasks, navigate, editingTask }) {
     </View>
   );
 };
-}
+
 export {
   Auth,
   Chat,
