@@ -565,7 +565,7 @@ function Tasks({ tasks, setTasks, navigate }) {
         task.id === taskId ? { ...task, done: !task.done } : task,
       ),
     );
-  };
+  }
 
   const deleteTask = (taskId) => {
     Alert.alert(
