@@ -548,80 +548,147 @@ function Files({ files, setSelectedFile, navigate }) {
     </View>
   );
 }
+
 function Tasks({ tasks, setTasks, navigate }) {
   const [filter, setFilter] = useState("All");
   const completeCount = tasks.filter((task) => task.done).length;
+
   const visibleTasks = tasks.filter((task) => {
     if (filter === "Pending") return !task.done;
     if (filter === "Completed") return task.done;
     return true;
   });
 
+  const toggleTask = (taskId) => {
+    setTasks((current) =>
+      current.map((task) =>
+        task.id === taskId ? { ...task, done: !task.done } : task,
+      ),
+    );
+  };
+
+  const deleteTask = (taskId) => {
+    Alert.alert(
+      "Delete Task",
+      "Are you sure you want to delete this task?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () =>
+            setTasks((current) =>
+              current.filter((task) => task.id !== taskId),
+            ),
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.screen}>
-    <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
-      <Top
-        title="Your Tasks"
-        right={
-          <Text style={styles.donePill}>
-            {completeCount}/{tasks.length} Done
-          </Text>
-        }
-      />
-      <View style={styles.chips}>
-        {["All", "Pending", "Completed"].map((item) => (
-          <Pressable key={item} onPress={() => setFilter(item)}>
-            <Text style={filter === item ? styles.chipOn : styles.chip}>
-              {item}
+      <ScrollView style={styles.flex} contentContainerStyle={styles.content}>
+        <Top
+          title="Your Tasks"
+          right={
+            <Text style={styles.donePill}>
+              {completeCount}/{tasks.length} Done
             </Text>
-          </Pressable>
-        ))}
-      </View>
-      {visibleTasks.map((task) => (
-        <Pressable
-          key={task.id}
-          onPress={() =>
-            setTasks(
-              tasks.map((item) =>
-                item.id === task.id ? { ...item, done: !item.done } : item,
-              ),
-            )
           }
-          style={[styles.taskCard, task.done && styles.taskDone]}
-        >
-          <View style={[styles.checkbox, task.done && styles.checkboxDone]}>
-            {task.done && <Text style={styles.check}>✓</Text>}
-          </View>
-          <View style={styles.taskBody}>
-            <View style={styles.taskLine}>
-              <Text style={styles.moduleTag}>{task.module}</Text>
-              <Text
+        />
+
+        <View style={styles.chips}>
+          {["All", "Pending", "Completed"].map((item) => (
+            <Pressable key={item} onPress={() => setFilter(item)}>
+              <Text style={filter === item ? styles.chipOn : styles.chip}>
+                {item}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        {visibleTasks.map((task) => (
+          <View
+            key={task.id}
+            style={[styles.taskCard, task.done && styles.taskDone]}
+          >
+            <Pressable
+              onPress={() => toggleTask(task.id)}
+              style={styles.checkboxArea}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: task.done }}
+            >
+              <View
                 style={[
-                  styles.priority,
-                  task.priority === "MEDIUM PRIORITY" && styles.medium,
-                  task.priority === "LOW PRIORITY" && styles.low,
+                  styles.checkbox,
+                  task.done && styles.checkboxDone,
                 ]}
               >
-                {task.priority}
+                {task.done && <Text style={styles.check}>✓</Text>}
+              </View>
+            </Pressable>
+
+            <View style={styles.taskBody}>
+              <View style={styles.taskLine}>
+                <Text style={styles.moduleTag}>{task.module}</Text>
+                <Text
+                  style={[
+                    styles.priority,
+                    task.priority === "MEDIUM PRIORITY" && styles.medium,
+                    task.priority === "LOW PRIORITY" && styles.low,
+                  ]}
+                >
+                  {task.priority}
+                </Text>
+              </View>
+
+              <Text
+                style={[styles.taskTitle, task.done && styles.struck]}
+              >
+                {task.title}
               </Text>
+
+              <Text style={styles.muted}>{task.detail}</Text>
+
+              <Text style={[styles.due, task.done && styles.muted]}>
+                {task.due}
+              </Text>
+
+              <View style={styles.twoButtons}>
+                <Button
+                  secondary
+                  style={styles.flexButton}
+                  onPress={() =>
+                    navigate("TaskEditor", false, {
+                      taskId: String(task.id),
+                    })
+                  }
+                >
+                  Edit
+                </Button>
+
+                <Button
+                  secondary
+                  style={styles.flexButton}
+                  onPress={() => deleteTask(task.id)}
+                >
+                  Delete
+                </Button>
+              </View>
             </View>
-            <Text style={[styles.taskTitle, task.done && styles.struck]}>
-              {task.title}
-            </Text>
-            <Text style={styles.muted}>{task.detail}</Text>
-            <Text style={[styles.due, task.done && styles.muted]}>
-              {task.due}
+          </View>
+        ))}
+
+        {visibleTasks.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>Nothing in this list</Text>
+            <Text style={styles.muted}>
+              Add a task or choose another filter.
             </Text>
           </View>
-        </Pressable>
-      ))}
-      {visibleTasks.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyTitle}>Nothing in this list</Text>
-          <Text style={styles.muted}>Add a task or choose another filter.</Text>
-        </View>
-      )}
-    </ScrollView>
+        )}
+      </ScrollView>
+
       <Pressable
         onPress={() => navigate("TaskEditor")}
         style={[styles.fab, styles.tasksFab]}
@@ -631,6 +698,7 @@ function Tasks({ tasks, setTasks, navigate }) {
     </View>
   );
 }
+
 function Schedule({ schedule, setSchedule }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(0);
@@ -1218,26 +1286,47 @@ function Profile({ navigate }) {
       <AppTabBar navigate={navigate} active="Home" />
     </View>
   );
-}
-function TaskEditor({ setTasks, navigate }) {
-  const [title, setTitle] = useState("Prepare Databases Chapter 4 slides");
-  const [module, setModule] = useState("COMS3007");
+
+function TaskEditor({ tasks, setTasks, navigate, editingTask }) {
+  const dueParts = editingTask?.due?.match(
+    /^Due (.+), (\d{2}:\d{2})$/,
+  );
+
+  const [title, setTitle] = useState(
+    editingTask?.title ?? "Prepare Databases Chapter 4 slides",
+  );
+
+  const [module, setModule] = useState(
+    editingTask?.module ?? "COMS3007",
+  );
+
   const moduleNames = {
     COMS3007: "Databases",
     INF3024S: "Microservices",
     STAT2012: "Statistics",
   };
+
   const [dueDate, setDueDate] = useState(() => {
+    if (dueParts) return dueParts[1];
+
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
+
     return tomorrow.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
   });
-  const [dueTime, setDueTime] = useState("23:59");
-  const [priority, setPriority] = useState("HIGH");
+
+  const [dueTime, setDueTime] = useState(
+    dueParts?.[2] ?? "23:59",
+  );
+
+  const [priority, setPriority] = useState(
+    editingTask?.priority?.replace(" PRIORITY", "") ?? "HIGH",
+  );
+
   const [reminderEnabled, setReminderEnabled] = useState(true);
   const [error, setError] = useState("");
 
@@ -1246,24 +1335,20 @@ function TaskEditor({ setTasks, navigate }) {
       setError("Enter a task title, due date, and due time.");
       return;
     }
-    const dateMatch = /^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/.exec(dueDate.trim());
+
+    const dateMatch = /^(\d{1,2}) ([A-Za-z]{3}) (\d{4})$/.exec(
+      dueDate.trim(),
+    );
+
     const months = [
-      "jan",
-      "feb",
-      "mar",
-      "apr",
-      "may",
-      "jun",
-      "jul",
-      "aug",
-      "sep",
-      "oct",
-      "nov",
-      "dec",
+      "jan", "feb", "mar", "apr", "may", "jun",
+      "jul", "aug", "sep", "oct", "nov", "dec",
     ];
+
     const monthIndex = dateMatch
       ? months.indexOf(dateMatch[2].toLowerCase())
       : -1;
+
     const parsedDate =
       monthIndex < 0
         ? null
@@ -1272,6 +1357,7 @@ function TaskEditor({ setTasks, navigate }) {
             monthIndex,
             Number(dateMatch[1]),
           );
+
     if (
       !parsedDate ||
       parsedDate.getFullYear() !== Number(dateMatch[3]) ||
@@ -1281,26 +1367,189 @@ function TaskEditor({ setTasks, navigate }) {
       setError("Enter the due date as DD Mon YYYY, for example 23 Oct 2026.");
       return;
     }
+
     if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(dueTime.trim())) {
       setError("Enter a valid 24-hour due time, for example 14:30.");
       return;
     }
 
+    const updatedTask = {
+      id: editingTask?.id ?? Date.now(),
+      module,
+      title: title.trim(),
+      detail: editingTask?.detail ?? "Coursework deadline",
+      due: `Due ${dueDate.trim()}, ${dueTime.trim()}`,
+      priority: `${priority} PRIORITY`,
+      done: editingTask?.done ?? false,
+    };
+
     setError("");
-    setTasks((current) => [
-      {
-        id: Date.now(),
-        module,
-        title: title.trim(),
-        detail: "Coursework deadline",
-        due: `Due ${dueDate.trim()}, ${dueTime.trim()}`,
-        priority: `${priority} PRIORITY`,
-        done: false,
-      },
-      ...current,
-    ]);
-    navigate("Tasks");
+
+    if (editingTask) {
+      setTasks((current) =>
+        current.map((task) =>
+          task.id === editingTask.id ? updatedTask : task,
+        ),
+      );
+    } else {
+      setTasks((current) => [updatedTask, ...current]);
+    }
+
+    navigate("Tasks", true);
   };
+
+  return (
+    <View style={styles.screenWithNav}>
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.content}
+      >
+        <Top
+          title={editingTask ? "Edit Task" : "Create New Task"}
+          onBack={() => navigate("Tasks", true)}
+        />
+
+        <Text style={styles.label}>Task Title</Text>
+        <TextInput
+          style={styles.field}
+          value={title}
+          onChangeText={(value) => {
+            setTitle(value);
+            setError("");
+          }}
+          placeholder="Enter task title"
+          maxLength={100}
+        />
+
+        <Text style={styles.label}>Course Module</Text>
+        <Pressable
+          onPress={() =>
+            setModule((current) => {
+              const modules = ["COMS3007", "INF3024S", "STAT2012"];
+              return modules[
+                (modules.indexOf(current) + 1) % modules.length
+              ];
+            })
+          }
+          style={styles.select}
+        >
+          <Text style={styles.selectText}>
+            {module} ({moduleNames[module]})
+          </Text>
+          <Text style={styles.selectArrow}>⌄</Text>
+        </Pressable>
+
+        <View style={styles.twoCol}>
+          <View style={styles.col}>
+            <Text style={styles.label}>Due Date</Text>
+            <View style={styles.fieldWithIcon}>
+              <TextInput
+                style={[styles.field, styles.iconField]}
+                value={dueDate}
+                onChangeText={(value) => {
+                  setDueDate(value);
+                  setError("");
+                }}
+                placeholder="DD Mon YYYY"
+              />
+              <Text style={styles.fieldIcon}>▦</Text>
+            </View>
+          </View>
+
+          <View style={styles.col}>
+            <Text style={styles.label}>Due Time</Text>
+            <View style={styles.fieldWithIcon}>
+              <TextInput
+                style={[styles.field, styles.iconField]}
+                value={dueTime}
+                onChangeText={(value) => {
+                  setDueTime(value);
+                  setError("");
+                }}
+                placeholder="23:59"
+              />
+              <Text style={styles.fieldIcon}>◷</Text>
+            </View>
+          </View>
+        </View>
+
+        <Text style={styles.label}>Priority level</Text>
+        <View style={styles.priorityRow}>
+          {["LOW", "MEDIUM", "HIGH"].map((item) => (
+            <Pressable
+              key={item}
+              style={styles.priorityAction}
+              onPress={() => setPriority(item)}
+            >
+              <Text
+                style={
+                  priority === item
+                    ? styles.priorityChoiceOn
+                    : styles.priorityChoice
+                }
+              >
+                {item.charAt(0) + item.slice(1).toLowerCase()}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={styles.reminder}>
+          <View>
+            <Text style={styles.prefTitle}>
+              Push Notification Reminder
+            </Text>
+            <Text style={styles.muted}>
+              Remind me 1 hour before due
+            </Text>
+          </View>
+
+          <Pressable
+            accessibilityRole="switch"
+            accessibilityState={{ checked: reminderEnabled }}
+            onPress={() =>
+              setReminderEnabled((enabled) => !enabled)
+            }
+            style={[
+              styles.toggle,
+              !reminderEnabled && styles.toggleOff,
+            ]}
+          >
+            <View
+              style={[
+                styles.toggleKnob,
+                !reminderEnabled && styles.toggleKnobOff,
+              ]}
+            />
+          </Pressable>
+        </View>
+
+        {!!error && (
+          <Text style={styles.formError}>{error}</Text>
+        )}
+
+        <View style={styles.twoButtons}>
+          <Button
+            secondary
+            style={styles.flexButton}
+            onPress={() => navigate("Tasks", true)}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            style={styles.flexButton}
+            onPress={saveTask}
+          >
+            {editingTask ? "Update Task" : "Save Task"}
+          </Button>
+        </View>
+      </ScrollView>
+
+      <AppTabBar navigate={navigate} active="Tasks" />
+    </View>
+  );
+}
 
   return (
     <View style={styles.screenWithNav}>
